@@ -213,9 +213,8 @@ export const Chat = ({ ydoc, provider, onClose }: ChatProps) => {
                                                         className="max-w-full rounded-lg border border-white/10 hover:opacity-90 transition-opacity"
                                                         style={{ maxHeight: '300px', width: 'auto' }}
                                                         loading="eager"
-                                                        onError={(e) => {
+                                                        onError={() => {
                                                             console.error('Image failed to load:', msg.fileUrl);
-                                                            e.currentTarget.style.display = 'none';
                                                         }}
                                                     />
                                                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity bg-black/20 rounded-lg">
@@ -228,7 +227,7 @@ export const Chat = ({ ydoc, provider, onClose }: ChatProps) => {
                                                         controls
                                                         src={msg.fileUrl}
                                                         className="w-full h-8"
-                                                        onError={(e) => {
+                                                        onError={() => {
                                                             console.error('Audio failed to load:', msg.fileUrl);
                                                         }}
                                                     />
