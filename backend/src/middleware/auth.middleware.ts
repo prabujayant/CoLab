@@ -7,6 +7,7 @@ export interface AuthRequest extends Request {
         id: string;
         email: string;
     };
+    file?: any;
 }
 
 const JWT_SECRET = process.env.JWT_SECRET || 'secret';
