@@ -2,8 +2,14 @@ import axios from 'axios';
 import { useAuthStore } from '../stores/authStore';
 
 const getBaseUrl = () => {
-    const envUrl = import.meta.env.VITE_API_URL;
+    let envUrl = import.meta.env.VITE_API_URL;
     if (!envUrl) return 'http://localhost:3000/api';
+
+    // Handle Render internal hostnames / slugs (e.g. colab-backend-2fvb)
+    if (!envUrl.startsWith('http') && !envUrl.includes('.') && !envUrl.includes(':')) {
+        envUrl = `${envUrl}.onrender.com`;
+    }
+
     if (envUrl.startsWith('http')) return envUrl;
     return `https://${envUrl}/api`;
 };
