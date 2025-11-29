@@ -85,9 +85,10 @@ export const Chat = ({ ydoc, provider, onClose }: ChatProps) => {
             // Construct full URL
             const fileUrl = `${import.meta.env.VITE_API_URL || 'http://localhost:3000'}/files/${data.file.id}`;
             sendMessage(`Shared a file: ${file.name}`, { url: fileUrl, name: file.name });
-        } catch (error) {
+        } catch (error: any) {
             console.error('Upload failed', error);
-            alert('Failed to upload file');
+            const errorMessage = error?.response?.data?.error || error.message || 'Unknown error';
+            alert(`Failed to upload file: ${errorMessage}`);
         } finally {
             setIsUploading(false);
             if (fileInputRef.current) fileInputRef.current.value = '';
