@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
-import { Paperclip, FileText, Image as ImageIcon } from 'lucide-react';
+import { Paperclip, FileText } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { uploadFile } from '../services/api.service';
 
