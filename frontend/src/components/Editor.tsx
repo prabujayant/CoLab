@@ -9,6 +9,7 @@ import { useCollaborativeDocument } from '../hooks/useCollaborativeDocument';
 import { useAuthStore } from '../stores/authStore';
 import api from '../services/api.service';
 import { VersionHistory } from './VersionHistory';
+import { Chat } from './Chat';
 
 interface EditorProps {
     slug: string;
@@ -26,6 +27,7 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [editedTitle, setEditedTitle] = useState(title ?? slug);
     const [showHistory, setShowHistory] = useState(false);
+    const [showChat, setShowChat] = useState(false);
 
     useEffect(() => {
         setEditedTitle(title ?? slug);
@@ -274,6 +276,15 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
                                 🔗 Share
                             </button>
                             <button
+                                onClick={() => setShowChat(!showChat)}
+                                className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${showChat
+                                    ? 'bg-emerald-500/20 text-emerald-300'
+                                    : 'bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20'
+                                    }`}
+                            >
+                                💬 Chat
+                            </button>
+                            <button
                                 onClick={() => setShowHistory(true)}
                                 className="rounded-md bg-purple-500/10 px-4 py-2 text-sm font-medium text-purple-300 hover:bg-purple-500/20 transition-colors"
                             >
@@ -310,6 +321,15 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
                     currentContent={viewRef.current?.state.doc.toString() || ''}
                     onRestore={handleRestore}
                     onClose={() => setShowHistory(false)}
+                />
+            )}
+
+            {/* Chat Sidebar */}
+            {showChat && ydoc && provider && (
+                <Chat
+                    ydoc={ydoc}
+                    provider={provider}
+                    onClose={() => setShowChat(false)}
                 />
             )}
         </div>
