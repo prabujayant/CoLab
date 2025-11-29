@@ -28,11 +28,37 @@ export const MarkdownToolbar = ({ view }: MarkdownToolbarProps) => {
     const insertBlock = (prefix: string) => {
         const { state, dispatch } = view;
         const line = state.doc.lineAt(state.selection.main.head);
+        const lineText = line.text;
 
-        dispatch({
-            changes: { from: line.from, insert: prefix },
-            userEvent: 'input.format'
-        });
+        // Regex to match existing block prefixes: #, ##, ###, -, 1., >
+        const prefixRegex = /^(#{1,3}\s|[-]\s|\d+\.\s|>\s)/;
+        const match = lineText.match(prefixRegex);
+
+        if (match) {
+            const existingPrefix = match[0];
+            const from = line.from;
+            const to = line.from + existingPrefix.length;
+
+            if (existingPrefix === prefix) {
+                // Toggle off: Remove existing prefix
+                dispatch({
+                    changes: { from, to, insert: '' },
+                    userEvent: 'input.format'
+                });
+            } else {
+                // Replace: Swap existing prefix with new one
+                dispatch({
+                    changes: { from, to, insert: prefix },
+                    userEvent: 'input.format'
+                });
+            }
+        } else {
+            // Insert: Add new prefix
+            dispatch({
+                changes: { from: line.from, insert: prefix },
+                userEvent: 'input.format'
+            });
+        }
         view.focus();
     };
 
