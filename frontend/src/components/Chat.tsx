@@ -3,7 +3,6 @@ import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
 import { Paperclip, FileText } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
-import { useUiStore } from '../stores/uiStore';
 import { uploadFile } from '../services/api.service';
 
 interface ChatProps {
@@ -27,7 +26,7 @@ const EMOJIS = ['😀', '😂', '😍', '🔥', '👍', '👎', '🎉', '🚀', 
 
 export const Chat = ({ ydoc, provider, onClose }: ChatProps) => {
     const { user } = useAuthStore();
-    const { fontFamily, fontSize } = useUiStore();
+    const { user } = useAuthStore();
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);

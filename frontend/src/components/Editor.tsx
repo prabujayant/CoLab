@@ -283,7 +283,7 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
                                 <option value="Roboto">Roboto</option>
                                 <option value="Fira Code">Fira Code</option>
                                 <option value="Merriweather">Merriweather</option>
-                                <option value="Comic Sans MS">Comic Sans</option>
+                                <option value="Comic Sans MS">Comic Sans MS</option>
                             </select>
                             <select
                                 value={fontSize}
