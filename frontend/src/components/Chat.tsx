@@ -26,7 +26,6 @@ const EMOJIS = ['😀', '😂', '😍', '🔥', '👍', '👎', '🎉', '🚀', 
 
 export const Chat = ({ ydoc, provider, onClose }: ChatProps) => {
     const { user } = useAuthStore();
-    const { user } = useAuthStore();
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
