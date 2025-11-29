@@ -28,6 +28,27 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
     const [editedTitle, setEditedTitle] = useState(title ?? slug);
     const [showHistory, setShowHistory] = useState(false);
     const [showChat, setShowChat] = useState(false);
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    useEffect(() => {
+        if (!ydoc) return;
+        const chatArray = ydoc.getArray('chat-messages');
+
+        const observer = () => {
+            if (!showChat) {
+                setUnreadCount(prev => prev + 1);
+            }
+        };
+
+        chatArray.observe(observer);
+        return () => chatArray.unobserve(observer);
+    }, [ydoc, showChat]);
+
+    useEffect(() => {
+        if (showChat) {
+            setUnreadCount(0);
+        }
+    }, [showChat]);
 
     useEffect(() => {
         setEditedTitle(title ?? slug);
@@ -277,12 +298,17 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
                             </button>
                             <button
                                 onClick={() => setShowChat(!showChat)}
-                                className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${showChat
+                                className={`relative rounded-md px-4 py-2 text-sm font-medium transition-colors ${showChat
                                     ? 'bg-emerald-500/20 text-emerald-300'
                                     : 'bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20'
                                     }`}
                             >
                                 💬 Chat
+                                {unreadCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-rose-500 text-[10px] text-white">
+                                        {unreadCount > 9 ? '9+' : unreadCount}
+                                    </span>
+                                )}
                             </button>
                             <button
                                 onClick={() => setShowHistory(true)}
