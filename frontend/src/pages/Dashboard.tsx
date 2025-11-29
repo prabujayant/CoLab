@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api.service';
-import { useAuthStore } from '../stores/authStore';
 
 interface Metrics {
     activeConnections: number;
@@ -24,7 +23,6 @@ const Dashboard: React.FC = () => {
     const [metrics, setMetrics] = useState<Metrics | null>(null);
     const [error, setError] = useState<string | null>(null);
     const navigate = useNavigate();
-    const user = useAuthStore((state) => state.user);
 
     useEffect(() => {
         const fetchMetrics = async () => {
