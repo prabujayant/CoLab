@@ -233,7 +233,7 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
     const { fontFamily, fontSize, setFontFamily, setFontSize } = useUiStore();
 
     return (
-        <div className={`flex min-h-screen ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}>
+        <div className={`flex h-screen overflow-hidden ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}>
             <div className="flex flex-1 flex-col">
                 {/* Header */}
                 <header className={`border-b px-6 py-4 ${isDark ? 'border-white/5 bg-slate-900/60' : 'border-slate-200 bg-white'}`}>

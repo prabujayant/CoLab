@@ -102,12 +102,12 @@ export const Chat = ({ ydoc, provider, onClose }: ChatProps) => {
 
     return (
         <div className="w-full md:w-96 border-l border-white/5 bg-slate-900/95 backdrop-blur-sm flex flex-col h-[100dvh] absolute right-0 top-0 z-50 shadow-2xl overflow-x-hidden">
-            <div className="flex items-center justify-between p-4 border-b border-white/5">
+            <div className="flex items-center justify-between p-4 border-b border-white/5 shrink-0">
                 <h2 className="text-lg font-semibold text-white">Chat</h2>
                 <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">✕</button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+            <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
                 {messages.length === 0 ? (
                     <div className="text-center text-slate-500 text-sm mt-10">No messages yet. Say hi! 👋</div>
                 ) : (
@@ -166,7 +166,7 @@ export const Chat = ({ ydoc, provider, onClose }: ChatProps) => {
                 <div ref={messagesEndRef} />
             </div>
 
-            <form onSubmit={handleSend} className="p-4 border-t border-white/5 bg-slate-900 relative">
+            <form onSubmit={handleSend} className="p-4 border-t border-white/5 bg-slate-900 relative shrink-0">
                 {showEmojiPicker && (
                     <div className="absolute bottom-full left-4 mb-2 bg-slate-800 border border-white/10 rounded-lg shadow-xl p-2 grid grid-cols-5 gap-1 w-64 z-50">
                         {EMOJIS.map(emoji => (
