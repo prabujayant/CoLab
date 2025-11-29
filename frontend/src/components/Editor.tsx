@@ -236,6 +236,7 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
     // Update theme/font without destroying view
     useEffect(() => {
         if (viewRef.current) {
+            console.log('Updating editor theme/font:', { theme, fontFamily, fontSize });
             viewRef.current.dispatch({
                 effects: themeCompartment.current.reconfigure([
                     theme === 'dark' ? darkTheme : lightTheme,
@@ -247,6 +248,9 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
                     })
                 ])
             });
+            console.log('Editor theme/font updated successfully');
+        } else {
+            console.warn('Editor view not ready for font update');
         }
     }, [theme, fontFamily, fontSize]);
 
