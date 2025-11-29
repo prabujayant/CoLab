@@ -15,7 +15,7 @@ import api from '../services/api.service';
 import { VersionHistory } from './VersionHistory';
 import { Chat } from './Chat';
 import { UserAvatars } from './UserAvatars';
-import { MarkdownToolbar } from './MarkdownToolbar';
+
 
 interface EditorProps {
     slug: string;
@@ -434,7 +434,7 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
                 {/* Editor */}
                 <main className="flex-1 overflow-hidden p-6 flex flex-col">
                     <div className={`flex-1 rounded-t-2xl border shadow-xl overflow-hidden flex flex-col ${isDark ? 'border-white/5 bg-slate-900/60' : 'border-slate-200 bg-white'}`}>
-                        <MarkdownToolbar view={viewRef.current} />
+
                         <div ref={editorRef} className="flex-1 overflow-auto" />
                     </div>
                     {/* Footer Stats */}
