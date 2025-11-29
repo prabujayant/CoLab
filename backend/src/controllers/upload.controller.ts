@@ -5,7 +5,8 @@ export const uploadFile = (req: Request, res: Response) => {
         return res.status(400).json({ error: 'No file uploaded' });
     }
 
-    const fileUrl = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    const protocol = req.get('host')?.includes('localhost') ? 'http' : 'https';
+    const fileUrl = `${protocol}://${req.get('host')}/uploads/${req.file.filename}`;
 
     res.json({
         url: fileUrl,
