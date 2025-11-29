@@ -6,16 +6,15 @@ import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { javascript } from '@codemirror/lang-javascript';
 import { yCollab } from 'y-codemirror.next';
 import { jsPDF } from 'jspdf';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, Image as ImageIcon } from 'lucide-react';
 import { useCollaborativeDocument } from '../hooks/useCollaborativeDocument';
 import { useAuthStore } from '../stores/authStore';
 import { useUiStore } from '../stores/uiStore';
 import { darkTheme, lightTheme } from '../utils/editorThemes';
-import api from '../services/api.service';
+import api, { uploadFile } from '../services/api.service';
 import { VersionHistory } from './VersionHistory';
 import { Chat } from './Chat';
 import { UserAvatars } from './UserAvatars';
-
 
 interface EditorProps {
     slug: string;
@@ -139,6 +138,32 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
         reader.readAsText(file);
 
         // Reset input so same file can be uploaded again
+        event.target.value = '';
+    };
+
+    const handleImageUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file || !viewRef.current) return;
+
+        try {
+            const result = await uploadFile(file);
+            const imageUrl = result.url;
+            const markdownImage = `![${result.originalName}](${imageUrl})`;
+
+            const { state, dispatch } = viewRef.current;
+            const range = state.selection.main;
+
+            dispatch({
+                changes: { from: range.from, to: range.to, insert: markdownImage },
+                selection: { anchor: range.from + markdownImage.length },
+                userEvent: 'input.paste'
+            });
+        } catch (error) {
+            console.error('Image upload failed:', error);
+            alert('Failed to upload image');
+        }
+
+        // Reset input
         event.target.value = '';
     };
 
@@ -280,6 +305,15 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
                                     accept=".txt,.js,.py,.md,.html,.css,.json"
                                 />
                             </label>
+                            <label className={`rounded-md px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${isDark ? 'bg-pink-500/10 text-pink-300 hover:bg-pink-500/20' : 'bg-pink-50 text-pink-600 hover:bg-pink-100'}`}>
+                                🖼️ Image
+                                <input
+                                    type="file"
+                                    onChange={handleImageUpload}
+                                    className="hidden"
+                                    accept="image/*"
+                                />
+                            </label>
                             <div className="relative group">
                                 <button
                                     className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${isDark ? 'bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'}`}
@@ -392,13 +426,23 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
                                         accept=".txt,.js,.py,.md,.html,.css,.json"
                                     />
                                 </label>
-                                <button
-                                    onClick={handleShare}
-                                    className={`rounded-md px-4 py-3 text-sm font-medium transition-colors ${isDark ? 'bg-cyan-500/10 text-cyan-300' : 'bg-cyan-50 text-cyan-600'}`}
-                                >
-                                    🔗 Share
-                                </button>
+                                <label className={`flex items-center justify-center gap-2 rounded-md px-4 py-3 text-sm font-medium transition-colors cursor-pointer ${isDark ? 'bg-pink-500/10 text-pink-300' : 'bg-pink-50 text-pink-600'}`}>
+                                    🖼️ Image
+                                    <input
+                                        type="file"
+                                        onChange={handleImageUpload}
+                                        className="hidden"
+                                        accept="image/*"
+                                    />
+                                </label>
                             </div>
+
+                            <button
+                                onClick={handleShare}
+                                className={`w-full rounded-md px-4 py-3 text-sm font-medium transition-colors ${isDark ? 'bg-cyan-500/10 text-cyan-300' : 'bg-cyan-50 text-cyan-600'}`}
+                            >
+                                🔗 Share
+                            </button>
 
                             <div className="grid grid-cols-2 gap-2">
                                 <button

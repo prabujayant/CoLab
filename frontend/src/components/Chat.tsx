@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState } from 'react';
 import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
+import { Paperclip, FileText, Image as ImageIcon } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
+import { uploadFile } from '../services/api.service';
 
 interface ChatProps {
     ydoc: Y.Doc;
@@ -15,6 +17,9 @@ interface Message {
     sender: string;
     senderColor: string;
     timestamp: number;
+    fileUrl?: string;
+    fileName?: string;
+    fileType?: string;
 }
 
 const EMOJIS = ['😀', '😂', '😍', '🔥', '👍', '👎', '🎉', '🚀', '💻', '🐛', '🤔', '👀', '❤️', '✅', '❌', '✨', '🌟', '🎵', '🍕', '☕'];
@@ -24,7 +29,9 @@ export const Chat = ({ ydoc, provider, onClose }: ChatProps) => {
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [isUploading, setIsUploading] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const chatArray = ydoc.getArray<Message>('chat-messages');
 
     useEffect(() => {
@@ -38,29 +45,57 @@ export const Chat = ({ ydoc, provider, onClose }: ChatProps) => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }, [messages]);
 
-    const handleSend = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!newMessage.trim()) return;
-
+    const sendMessage = (text: string, file?: { url: string; name: string; type: string }) => {
         const awareness = provider.awareness;
         const localState = awareness.getLocalState() as any;
 
         const message: Message = {
             id: crypto.randomUUID(),
-            text: newMessage.trim(),
+            text: text.trim(),
             sender: localState?.user?.name || user?.displayName || 'Anonymous',
             senderColor: localState?.user?.color || '#94a3b8',
-            timestamp: Date.now()
+            timestamp: Date.now(),
+            ...(file && {
+                fileUrl: file.url,
+                fileName: file.name,
+                fileType: file.type
+            })
         };
 
         chatArray.push([message]);
+    };
+
+    const handleSend = (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!newMessage.trim()) return;
+        sendMessage(newMessage);
         setNewMessage('');
         setShowEmojiPicker(false);
     };
 
+    const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        try {
+            const result = await uploadFile(file);
+            sendMessage('', {
+                url: result.url,
+                name: result.originalName,
+                type: result.mimetype
+            });
+        } catch (error) {
+            console.error('File upload failed:', error);
+            alert('Failed to upload file');
+        } finally {
+            setIsUploading(false);
+            if (fileInputRef.current) fileInputRef.current.value = '';
+        }
+    };
+
     const addEmoji = (emoji: string) => {
         setNewMessage(prev => prev + emoji);
-        // Keep picker open for multiple emojis
     };
 
     return (
@@ -83,7 +118,24 @@ export const Chat = ({ ydoc, provider, onClose }: ChatProps) => {
                                 </span>
                             </div>
                             <div className="bg-slate-800/50 rounded-lg px-3 py-2 text-sm text-slate-200 break-words">
-                                {msg.text}
+                                {msg.text && <div className="mb-1">{msg.text}</div>}
+                                {msg.fileUrl && (
+                                    <a
+                                        href={msg.fileUrl}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-2 p-2 bg-slate-700/50 rounded hover:bg-slate-700 transition-colors"
+                                    >
+                                        {msg.fileType?.startsWith('image/') ? (
+                                            <ImageIcon size={16} className="text-indigo-400" />
+                                        ) : (
+                                            <FileText size={16} className="text-indigo-400" />
+                                        )}
+                                        <span className="truncate max-w-[150px] text-indigo-300 underline decoration-indigo-300/30">
+                                            {msg.fileName}
+                                        </span>
+                                    </a>
+                                )}
                             </div>
                         </div>
                     ))
@@ -108,6 +160,22 @@ export const Chat = ({ ydoc, provider, onClose }: ChatProps) => {
                 )}
 
                 <div className="flex gap-2">
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        onChange={handleFileSelect}
+                        className="hidden"
+                        accept="image/*,.pdf,.doc,.docx,.txt"
+                    />
+                    <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        disabled={isUploading}
+                        className={`rounded-md px-3 py-2 transition-colors ${isUploading ? 'bg-slate-800 text-slate-600' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
+                        title="Attach File"
+                    >
+                        {isUploading ? '...' : <Paperclip size={18} />}
+                    </button>
                     <button
                         type="button"
                         onClick={() => setShowEmojiPicker(!showEmojiPicker)}

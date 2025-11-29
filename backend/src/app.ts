@@ -62,7 +62,14 @@ app.get('/api/metrics', authenticateToken, (req, res) => {
     res.json(metricsService.getMetrics());
 });
 
+import path from 'path';
+import uploadRoutes from './routes/upload.routes';
+
+// ...
+
+app.use('/uploads', express.static(path.join(__dirname, '../../uploads')));
 app.use('/api/auth', authRoutes);
+app.use('/api/upload', authenticateToken, uploadRoutes);
 app.use('/api/documents', authenticateToken, documentRoutes);
 
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
