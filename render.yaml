@@ -1,4 +1,11 @@
 services:
+  # Redis Service
+  - type: redis
+    name: colab-redis
+    region: oregon
+    plan: free
+    ipAllowList: []
+
   # Backend Service
   - type: web
     name: colab-backend
@@ -47,6 +54,3 @@ databases:
     plan: free
     databaseName: editor_db
     user: colab_user
-
-  - name: colab-redis
-    plan: free
