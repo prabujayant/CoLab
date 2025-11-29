@@ -135,19 +135,21 @@ Access the **Observability Dashboard** at `/dashboard` (requires login) to view:
 
 ## 🚀 Deployment
 
-### Option 1: Railway (Recommended)
-Railway is the easiest way to deploy this full-stack app.
+### Option 1: Render Blueprint (Easiest & Free)
+This repo includes a `render.yaml` file that automates everything.
 1.  Fork this repo.
-2.  Login to [Railway](https://railway.app/).
-3.  Create a **New Project** -> **Deploy from GitHub repo**.
-4.  Railway will detect the `docker-compose.yml` and deploy both Backend (Node/Postgres/Redis) and Frontend.
-5.  Add your environment variables in Railway dashboard.
+2.  Login to [Render](https://render.com/).
+3.  Click **New +** -> **Blueprint**.
+4.  Connect your forked repo.
+5.  Render will auto-detect the configuration and deploy:
+    -   **Backend Service** (Node.js)
+    -   **Frontend Site** (React)
+    -   **PostgreSQL Database**
+    -   **Redis Instance**
+6.  Click **Apply**. Done! 🎉
 
-### Option 2: Render
-1.  Create a **Web Service** for the Backend (`npm run start`).
-2.  Create a **Static Site** for the Frontend (`npm run build`).
-3.  Create a **PostgreSQL** and **Redis** instance on Render.
-4.  Link them via environment variables.
+### Option 2: Manual Setup
+If you prefer to set up services manually (e.g., using Neon/Upstash for permanent free tier), see the previous instructions or ask the AI assistant.
 
 ## 📄 License
 
