@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { EditorView, keymap, lineNumbers, highlightActiveLineGutter, highlightSpecialChars, drawSelection, dropCursor, rectangularSelection, crosshairCursor, highlightActiveLine } from '@codemirror/view';
-import { EditorState } from '@codemirror/state';
+import { EditorState, Compartment } from '@codemirror/state';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { javascript } from '@codemirror/lang-javascript';
 import { yCollab } from 'y-codemirror.next';
@@ -23,7 +23,7 @@ interface EditorProps {
 
 export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
     const { user } = useAuthStore();
-    const { theme, toggleTheme } = useUiStore();
+    const { theme, toggleTheme, fontFamily, fontSize, setFontFamily, setFontSize } = useUiStore();
     const { ydoc, provider, status } = useCollaborativeDocument({
         slug,
         user: user ?? undefined
@@ -167,6 +167,8 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
         });
     };
 
+    const themeCompartment = useRef(new Compartment());
+
     useEffect(() => {
         if (!ydoc || !provider || !editorRef.current) {
             return;
@@ -196,13 +198,15 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
                 keymap.of([...defaultKeymap, ...historyKeymap]),
                 javascript(),
                 yCollab(ytext, provider.awareness),
-                theme === 'dark' ? darkTheme : lightTheme,
-                EditorView.theme({
-                    '.cm-content': {
-                        fontFamily: useUiStore.getState().fontFamily,
-                        fontSize: `${useUiStore.getState().fontSize}px`,
-                    }
-                }),
+                themeCompartment.current.of([
+                    theme === 'dark' ? darkTheme : lightTheme,
+                    EditorView.theme({
+                        '.cm-content': {
+                            fontFamily: useUiStore.getState().fontFamily,
+                            fontSize: `${useUiStore.getState().fontSize}px`,
+                        }
+                    })
+                ]),
                 EditorView.lineWrapping,
                 EditorView.updateListener.of((update) => {
                     if (update.docChanged) {
@@ -221,16 +225,32 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
         });
 
         viewRef.current = view;
-        setTick(t => t + 1); // Trigger re-render to pass view to toolbar
+        setTick(t => t + 1);
 
         return () => {
             view.destroy();
             viewRef.current = null;
         };
-    }, [ydoc, provider, theme, useUiStore.getState().fontFamily, useUiStore.getState().fontSize]);
+    }, [ydoc, provider]); // Only re-create if doc/provider changes
+
+    // Update theme/font without destroying view
+    useEffect(() => {
+        if (viewRef.current) {
+            viewRef.current.dispatch({
+                effects: themeCompartment.current.reconfigure([
+                    theme === 'dark' ? darkTheme : lightTheme,
+                    EditorView.theme({
+                        '.cm-content': {
+                            fontFamily: fontFamily,
+                            fontSize: `${fontSize}px`,
+                        }
+                    })
+                ])
+            });
+        }
+    }, [theme, fontFamily, fontSize]);
 
     const isDark = theme === 'dark';
-    const { fontFamily, fontSize, setFontFamily, setFontSize } = useUiStore();
 
     return (
         <div className={`flex h-screen overflow-hidden ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}>
