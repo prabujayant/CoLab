@@ -65,10 +65,6 @@ app.get('/api/metrics', authenticateToken, (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/documents', authenticateToken, documentRoutes);
 
-import { uploadFile, getFile, uploadMiddleware } from './controllers/upload.controller';
-app.post('/api/upload', authenticateToken, uploadMiddleware.single('file'), uploadFile);
-app.get('/api/files/:id', authenticateToken, getFile);
-
 app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
     console.error(err);
     res.status(err.status || 500).json({ error: err.message || 'Internal Server Error' });
