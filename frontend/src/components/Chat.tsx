@@ -3,6 +3,7 @@ import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
 import { Paperclip, FileText } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
+import { useUiStore } from '../stores/uiStore';
 import { uploadFile } from '../services/api.service';
 
 interface ChatProps {
@@ -26,6 +27,7 @@ const EMOJIS = ['😀', '😂', '😍', '🔥', '👍', '👎', '🎉', '🚀', 
 
 export const Chat = ({ ydoc, provider, onClose }: ChatProps) => {
     const { user } = useAuthStore();
+    const { fontFamily, fontSize } = useUiStore();
     const [messages, setMessages] = useState<Message[]>([]);
     const [newMessage, setNewMessage] = useState('');
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -99,7 +101,7 @@ export const Chat = ({ ydoc, provider, onClose }: ChatProps) => {
     };
 
     return (
-        <div className="w-full md:w-80 border-l border-white/5 bg-slate-900/95 backdrop-blur-sm flex flex-col h-screen absolute right-0 top-0 z-50 shadow-2xl">
+        <div className="w-full md:w-96 border-l border-white/5 bg-slate-900/95 backdrop-blur-sm flex flex-col h-[100dvh] absolute right-0 top-0 z-50 shadow-2xl overflow-x-hidden">
             <div className="flex items-center justify-between p-4 border-b border-white/5">
                 <h2 className="text-lg font-semibold text-white">Chat</h2>
                 <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">✕</button>
@@ -196,6 +198,28 @@ export const Chat = ({ ydoc, provider, onClose }: ChatProps) => {
                         title="Attach File"
                     >
                         {isUploading ? '...' : <Paperclip size={18} />}
+                    </button>
+                    <button
+                        type="button"
+                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                        className={`rounded-md px-3 py-2 transition-colors ${showEmojiPicker ? 'bg-indigo-500/20 text-indigo-300' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
+                        title="Add Emoji"
+                    >
+                        😃
+                    </button>
+                    <input
+                        type="text"
+                        value={newMessage}
+                        onChange={(e) => setNewMessage(e.target.value)}
+                        placeholder="Type a message..."
+                        className="flex-1 bg-slate-800 text-white text-sm rounded-md px-3 py-2 outline-none focus:ring-1 focus:ring-indigo-500 border border-white/5"
+                        style={{ fontFamily, fontSize: `${fontSize}px` }}
+                    />
+                    <button
+                        type="submit"
+                        disabled={!newMessage.trim()}
+                        className="bg-indigo-500 text-white rounded-md px-3 py-2 text-sm font-medium hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                    >
                         Send
                     </button>
                 </div>
