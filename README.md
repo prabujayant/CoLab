@@ -133,6 +133,22 @@ Access the **Observability Dashboard** at `/dashboard` (requires login) to view:
 - System resource usage (CPU/RAM)
 - Snapshot storage metrics
 
+## 🚀 Deployment
+
+### Option 1: Railway (Recommended)
+Railway is the easiest way to deploy this full-stack app.
+1.  Fork this repo.
+2.  Login to [Railway](https://railway.app/).
+3.  Create a **New Project** -> **Deploy from GitHub repo**.
+4.  Railway will detect the `docker-compose.yml` and deploy both Backend (Node/Postgres/Redis) and Frontend.
+5.  Add your environment variables in Railway dashboard.
+
+### Option 2: Render
+1.  Create a **Web Service** for the Backend (`npm run start`).
+2.  Create a **Static Site** for the Frontend (`npm run build`).
+3.  Create a **PostgreSQL** and **Redis** instance on Render.
+4.  Link them via environment variables.
+
 ## 📄 License
 
 This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
