@@ -7,21 +7,23 @@ export const darkTheme = EditorView.theme({
         color: '#e2e8f0' // slate-200
     },
     '.cm-content': {
-        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-        fontSize: '14px',
-        padding: '16px 0'
+        fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+        fontSize: '16px',
+        padding: '24px',
+        lineHeight: '1.6'
     },
     '.cm-gutters': {
-        backgroundColor: '#1e293b', // slate-800
-        color: '#64748b', // slate-500
+        backgroundColor: 'transparent',
+        color: '#475569', // slate-600
         border: 'none',
-        paddingRight: '8px'
+        paddingRight: '16px'
     },
     '.cm-activeLineGutter': {
-        backgroundColor: '#334155' // slate-700
+        backgroundColor: 'transparent',
+        color: '#94a3b8' // slate-400
     },
     '.cm-activeLine': {
-        backgroundColor: 'rgba(99, 102, 241, 0.05)' // indigo-500/5
+        backgroundColor: 'rgba(99, 102, 241, 0.05)'
     },
     '.cm-selectionBackground': {
         backgroundColor: 'rgba(99, 102, 241, 0.2) !important'
@@ -30,7 +32,7 @@ export const darkTheme = EditorView.theme({
         backgroundColor: 'rgba(99, 102, 241, 0.3) !important'
     },
     '.cm-cursor': {
-        borderLeftColor: '#6366f1' // indigo-500
+        borderLeftColor: '#6366f1'
     },
     '.cm-ySelectionInfo': {
         backgroundColor: '#334155',
@@ -45,19 +47,20 @@ export const lightTheme = EditorView.theme({
         color: '#1e293b' // slate-800
     },
     '.cm-content': {
-        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-        fontSize: '14px',
-        padding: '16px 0'
+        fontFamily: 'ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+        fontSize: '16px',
+        padding: '24px',
+        lineHeight: '1.6'
     },
     '.cm-gutters': {
-        backgroundColor: '#f8fafc', // slate-50
-        color: '#94a3b8', // slate-400
-        borderRight: '1px solid #e2e8f0', // slate-200
-        paddingRight: '8px'
+        backgroundColor: 'transparent',
+        color: '#cbd5e1', // slate-300
+        border: 'none',
+        paddingRight: '16px'
     },
     '.cm-activeLineGutter': {
-        backgroundColor: '#e2e8f0', // slate-200
-        color: '#0f172a' // slate-950
+        backgroundColor: 'transparent',
+        color: '#64748b' // slate-500
     },
     '.cm-activeLine': {
         backgroundColor: 'rgba(99, 102, 241, 0.05)'

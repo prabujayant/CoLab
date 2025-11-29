@@ -194,6 +194,7 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
                 javascript(),
                 yCollab(ytext, provider.awareness),
                 theme === 'dark' ? darkTheme : lightTheme,
+                EditorView.lineWrapping,
                 EditorView.updateListener.of((update) => {
                     if (update.docChanged) {
                         updateStats(update.state.doc.toString());
@@ -432,13 +433,12 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
                 </header>
 
                 {/* Editor */}
-                <main className="flex-1 overflow-hidden p-6 flex flex-col">
-                    <div className={`flex-1 rounded-t-2xl border shadow-xl overflow-hidden flex flex-col ${isDark ? 'border-white/5 bg-slate-900/60' : 'border-slate-200 bg-white'}`}>
-
+                <main className="flex-1 overflow-hidden flex flex-col relative">
+                    <div className={`flex-1 overflow-hidden flex flex-col ${isDark ? 'bg-slate-950' : 'bg-white'}`}>
                         <div ref={editorRef} className="flex-1 overflow-auto" />
                     </div>
                     {/* Footer Stats */}
-                    <div className={`rounded-b-2xl border-x border-b px-4 py-2 text-xs flex justify-end gap-4 ${isDark ? 'border-white/5 bg-slate-900/80 text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-500'}`}>
+                    <div className={`border-t px-6 py-3 text-xs flex justify-end gap-4 ${isDark ? 'border-white/5 text-slate-500' : 'border-slate-100 text-slate-400'}`}>
                         <span>{stats.words} words</span>
                         <span>{stats.chars} characters</span>
                     </div>
