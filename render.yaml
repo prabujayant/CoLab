@@ -26,12 +26,12 @@ services:
         value: 10000
 
   # Frontend Static Site
-  - type: static
+  - type: web
     name: colab-frontend
     env: static
     plan: free
     buildCommand: cd frontend && npm install && npm run build
-    publishDir: frontend/dist
+    staticPublishPath: frontend/dist
     routes:
       - type: rewrite
         source: /*
