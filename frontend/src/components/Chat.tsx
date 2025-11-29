@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import * as Y from 'yjs';
 import { WebsocketProvider } from 'y-websocket';
-import { Paperclip, FileText } from 'lucide-react';
+import { Paperclip, FileText, Mic, Square, Play, Pause } from 'lucide-react';
 import { useAuthStore } from '../stores/authStore';
 import { uploadFile } from '../services/api.service';
 
@@ -30,6 +30,9 @@ export const Chat = ({ ydoc, provider, onClose }: ChatProps) => {
     const [newMessage, setNewMessage] = useState('');
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
+    const [isRecording, setIsRecording] = useState(false);
+    const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+    const audioChunksRef = useRef<Blob[]>([]);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const chatArray = ydoc.getArray<Message>('chat-messages');
@@ -94,8 +97,66 @@ export const Chat = ({ ydoc, provider, onClose }: ChatProps) => {
         }
     };
 
+    const startRecording = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const mediaRecorder = new MediaRecorder(stream);
+            mediaRecorderRef.current = mediaRecorder;
+            audioChunksRef.current = [];
+
+            mediaRecorder.ondataavailable = (event) => {
+                if (event.data.size > 0) {
+                    audioChunksRef.current.push(event.data);
+                }
+            };
+
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+                const audioFile = new File([audioBlob], `voice-message-${Date.now()}.webm`, { type: 'audio/webm' });
+
+                setIsUploading(true);
+                try {
+                    const result = await uploadFile(audioFile);
+                    sendMessage('', {
+                        url: result.url,
+                        name: 'Voice Message',
+                        type: 'audio/webm'
+                    });
+                } catch (error) {
+                    console.error('Audio upload failed:', error);
+                    alert('Failed to send voice message');
+                } finally {
+                    setIsUploading(false);
+                }
+
+                stream.getTracks().forEach(track => track.stop());
+            };
+
+            mediaRecorder.start();
+            setIsRecording(true);
+        } catch (error) {
+            console.error('Error accessing microphone:', error);
+            alert('Could not access microphone. Please check permissions.');
+        }
+    };
+
+    const stopRecording = () => {
+        if (mediaRecorderRef.current && isRecording) {
+            mediaRecorderRef.current.stop();
+            setIsRecording(false);
+        }
+    };
+
     const addEmoji = (emoji: string) => {
         setNewMessage(prev => prev + emoji);
+    };
+
+    const isImage = (msg: Message) => {
+        return msg.fileType?.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(msg.fileName || '');
+    };
+
+    const isAudio = (msg: Message) => {
+        return msg.fileType?.startsWith('audio/') || /\.(webm|mp3|wav|m4a)$/i.test(msg.fileName || '');
     };
 
     return (
@@ -133,16 +194,20 @@ export const Chat = ({ ydoc, provider, onClose }: ChatProps) => {
                                 )}
                                 {msg.fileUrl && (
                                     <div className="mt-2">
-                                        {(msg.fileType?.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(msg.fileName || '')) ? (
-                                            <a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" className="block">
+                                        {isImage(msg) ? (
+                                            <div className="relative group">
                                                 <img
                                                     src={msg.fileUrl}
                                                     alt={msg.fileName}
-                                                    className="max-w-full rounded-lg border border-white/10 hover:opacity-95 transition-opacity"
+                                                    className="max-w-full rounded-lg border border-white/10"
                                                     style={{ maxHeight: '300px', width: 'auto' }}
                                                     loading="eager"
                                                 />
-                                            </a>
+                                            </div>
+                                        ) : isAudio(msg) ? (
+                                            <div className="flex items-center gap-2 min-w-[200px]">
+                                                <audio controls src={msg.fileUrl} className="w-full h-8" />
+                                            </div>
                                         ) : (
                                             <a
                                                 href={msg.fileUrl}
@@ -184,7 +249,7 @@ export const Chat = ({ ydoc, provider, onClose }: ChatProps) => {
                     </div>
                 )}
 
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
                     <input
                         type="file"
                         ref={fileInputRef}
@@ -195,12 +260,22 @@ export const Chat = ({ ydoc, provider, onClose }: ChatProps) => {
                     <button
                         type="button"
                         onClick={() => fileInputRef.current?.click()}
-                        disabled={isUploading}
+                        disabled={isUploading || isRecording}
                         className={`rounded-md px-3 py-2 transition-colors ${isUploading ? 'bg-slate-800 text-slate-600' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
                         title="Attach File"
                     >
                         {isUploading ? '...' : <Paperclip size={18} />}
                     </button>
+
+                    <button
+                        type="button"
+                        onClick={isRecording ? stopRecording : startRecording}
+                        className={`rounded-md px-3 py-2 transition-colors ${isRecording ? 'bg-rose-500 text-white animate-pulse' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
+                        title={isRecording ? "Stop Recording" : "Record Voice Message"}
+                    >
+                        {isRecording ? <Square size={18} fill="currentColor" /> : <Mic size={18} />}
+                    </button>
+
                     <button
                         type="button"
                         onClick={() => setShowEmojiPicker(!showEmojiPicker)}
@@ -213,18 +288,19 @@ export const Chat = ({ ydoc, provider, onClose }: ChatProps) => {
                         type="text"
                         value={newMessage}
                         onChange={(e) => setNewMessage(e.target.value)}
-                        placeholder="Type a message..."
-                        className="flex-1 bg-slate-800 text-white text-sm rounded-md px-3 py-2 outline-none focus:ring-1 focus:ring-indigo-500 border border-white/5"
+                        placeholder={isRecording ? "Recording..." : "Type a message..."}
+                        disabled={isRecording}
+                        className="flex-1 bg-slate-800 text-white text-sm rounded-md px-3 py-2 outline-none focus:ring-1 focus:ring-indigo-500 border border-white/5 disabled:opacity-50"
                     />
                     <button
                         type="submit"
-                        disabled={!newMessage.trim()}
+                        disabled={!newMessage.trim() || isRecording}
                         className="bg-indigo-500 text-white rounded-md px-3 py-2 text-sm font-medium hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                         Send
                     </button>
                 </div>
             </form>
-        </div >
+        </div>
     );
 };
