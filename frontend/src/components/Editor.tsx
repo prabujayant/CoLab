@@ -23,7 +23,7 @@ interface EditorProps {
 
 export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
     const { user } = useAuthStore();
-    const { theme, toggleTheme, fontFamily, fontSize, setFontFamily, setFontSize } = useUiStore();
+    const { theme, toggleTheme } = useUiStore();
     const { ydoc, provider, status } = useCollaborativeDocument({
         slug,
         user: user ?? undefined
@@ -198,23 +198,7 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
                 keymap.of([...defaultKeymap, ...historyKeymap]),
                 javascript(),
                 yCollab(ytext, provider.awareness),
-                themeCompartment.current.of([
-                    theme === 'dark' ? darkTheme : lightTheme,
-                    EditorView.baseTheme({
-                        '&': {
-                            fontSize: `${useUiStore.getState().fontSize}px`,
-                            fontFamily: useUiStore.getState().fontFamily,
-                        },
-                        '.cm-content': {
-                            fontSize: `${useUiStore.getState().fontSize}px !important`,
-                            fontFamily: `${useUiStore.getState().fontFamily} !important`,
-                        },
-                        '.cm-line': {
-                            fontSize: `${useUiStore.getState().fontSize}px !important`,
-                            fontFamily: `${useUiStore.getState().fontFamily} !important`,
-                        }
-                    })
-                ]),
+                themeCompartment.current.of(theme === 'dark' ? darkTheme : lightTheme),
                 EditorView.lineWrapping,
                 EditorView.updateListener.of((update) => {
                     if (update.docChanged) {
@@ -241,34 +225,14 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
         };
     }, [ydoc, provider]); // Only re-create if doc/provider changes
 
-    // Update theme/font without destroying view
+    // Update theme without destroying view
     useEffect(() => {
         if (viewRef.current) {
-            console.log('Updating editor theme/font:', { theme, fontFamily, fontSize });
             viewRef.current.dispatch({
-                effects: themeCompartment.current.reconfigure([
-                    theme === 'dark' ? darkTheme : lightTheme,
-                    EditorView.baseTheme({
-                        '&': {
-                            fontSize: `${fontSize}px`,
-                            fontFamily: fontFamily,
-                        },
-                        '.cm-content': {
-                            fontSize: `${fontSize}px !important`,
-                            fontFamily: `${fontFamily} !important`,
-                        },
-                        '.cm-line': {
-                            fontSize: `${fontSize}px !important`,
-                            fontFamily: `${fontFamily} !important`,
-                        }
-                    })
-                ])
+                effects: themeCompartment.current.reconfigure(theme === 'dark' ? darkTheme : lightTheme)
             });
-            console.log('Editor theme/font updated successfully');
-        } else {
-            console.warn('Editor view not ready for font update');
         }
-    }, [theme, fontFamily, fontSize]);
+    }, [theme]);
 
     const isDark = theme === 'dark';
 
@@ -314,26 +278,7 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
 
                         {/* Desktop Actions */}
                         <div className="hidden md:flex items-center gap-4">
-                            <select
-                                value={fontFamily}
-                                onChange={(e) => setFontFamily(e.target.value)}
-                                className={`rounded-md px-2 py-1 text-sm border outline-none ${isDark ? 'bg-slate-800 border-white/10 text-slate-300' : 'bg-white border-slate-200 text-slate-700'}`}
-                            >
-                                <option value="Inter">Inter</option>
-                                <option value="Roboto">Roboto</option>
-                                <option value="Fira Code">Fira Code</option>
-                                <option value="Merriweather">Merriweather</option>
-                                <option value="Comic Sans MS">Comic Sans MS</option>
-                            </select>
-                            <select
-                                value={fontSize}
-                                onChange={(e) => setFontSize(Number(e.target.value))}
-                                className={`rounded-md px-2 py-1 text-sm border outline-none ${isDark ? 'bg-slate-800 border-white/10 text-slate-300' : 'bg-white border-slate-200 text-slate-700'}`}
-                            >
-                                {[12, 14, 16, 18, 20, 24, 28, 32].map(size => (
-                                    <option key={size} value={size}>{size}px</option>
-                                ))}
-                            </select>
+
                             <button
                                 onClick={toggleTheme}
                                 className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
