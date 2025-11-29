@@ -196,34 +196,10 @@ export const Chat = ({ ydoc, provider, onClose }: ChatProps) => {
                         disabled={isUploading}
                         className={`rounded-md px-3 py-2 transition-colors ${isUploading ? 'bg-slate-800 text-slate-600' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
                         title="Attach File"
-                    >
-                        {isUploading ? '...' : <Paperclip size={18} />}
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-                        className={`rounded-md px-3 py-2 transition-colors ${showEmojiPicker ? 'bg-indigo-500/20 text-indigo-300' : 'bg-slate-800 text-slate-400 hover:text-white'}`}
-                        title="Add Emoji"
-                    >
-                        😃
-                    </button>
-                    <input
-                        type="text"
-                        value={newMessage}
-                        onChange={(e) => setNewMessage(e.target.value)}
-                        placeholder="Type a message..."
-                        className="flex-1 bg-slate-800 text-white text-sm rounded-md px-3 py-2 outline-none focus:ring-1 focus:ring-indigo-500 border border-white/5"
-                        style={{ fontFamily, fontSize: `${fontSize}px` }}
-                    />
-                    <button
-                        type="submit"
-                        disabled={!newMessage.trim()}
-                        className="bg-indigo-500 text-white rounded-md px-3 py-2 text-sm font-medium hover:bg-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                    >
                         Send
                     </button>
-                </div>
-            </form>
         </div>
+            </form >
+        </div >
     );
 };
