@@ -193,6 +193,12 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
                 javascript(),
                 yCollab(ytext, provider.awareness),
                 theme === 'dark' ? darkTheme : lightTheme,
+                EditorView.theme({
+                    '.cm-content': {
+                        fontFamily: useUiStore.getState().fontFamily,
+                        fontSize: `${useUiStore.getState().fontSize}px`,
+                    }
+                }),
                 EditorView.lineWrapping,
                 EditorView.updateListener.of((update) => {
                     if (update.docChanged) {
@@ -217,9 +223,10 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
             view.destroy();
             viewRef.current = null;
         };
-    }, [ydoc, provider, theme]);
+    }, [ydoc, provider, theme, useUiStore.getState().fontFamily, useUiStore.getState().fontSize]);
 
     const isDark = theme === 'dark';
+    const { fontFamily, fontSize, setFontFamily, setFontSize } = useUiStore();
 
     return (
         <div className={`flex min-h-screen ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}>
@@ -263,6 +270,26 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
 
                         {/* Desktop Actions */}
                         <div className="hidden md:flex items-center gap-4">
+                            <select
+                                value={fontFamily}
+                                onChange={(e) => setFontFamily(e.target.value)}
+                                className={`rounded-md px-2 py-1 text-sm border outline-none ${isDark ? 'bg-slate-800 border-white/10 text-slate-300' : 'bg-white border-slate-200 text-slate-700'}`}
+                            >
+                                <option value="Inter">Inter</option>
+                                <option value="Roboto">Roboto</option>
+                                <option value="Fira Code">Fira Code</option>
+                                <option value="Merriweather">Merriweather</option>
+                                <option value="Comic Sans MS">Comic Sans</option>
+                            </select>
+                            <select
+                                value={fontSize}
+                                onChange={(e) => setFontSize(Number(e.target.value))}
+                                className={`rounded-md px-2 py-1 text-sm border outline-none ${isDark ? 'bg-slate-800 border-white/10 text-slate-300' : 'bg-white border-slate-200 text-slate-700'}`}
+                            >
+                                {[12, 14, 16, 18, 20, 24, 28, 32].map(size => (
+                                    <option key={size} value={size}>{size}px</option>
+                                ))}
+                            </select>
                             <button
                                 onClick={toggleTheme}
                                 className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}

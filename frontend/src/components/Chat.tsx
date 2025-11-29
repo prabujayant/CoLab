@@ -118,23 +118,44 @@ export const Chat = ({ ydoc, provider, onClose }: ChatProps) => {
                                 </span>
                             </div>
                             <div className="bg-slate-800/50 rounded-lg px-3 py-2 text-sm text-slate-200 break-words">
-                                {msg.text && <div className="mb-1">{msg.text}</div>}
-                                {msg.fileUrl && (
-                                    <a
-                                        href={msg.fileUrl}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center gap-2 p-2 bg-slate-700/50 rounded hover:bg-slate-700 transition-colors"
-                                    >
-                                        {msg.fileType?.startsWith('image/') ? (
-                                            <ImageIcon size={16} className="text-indigo-400" />
-                                        ) : (
-                                            <FileText size={16} className="text-indigo-400" />
+                                {msg.text && (
+                                    <div className="mb-1">
+                                        {msg.text.split(/(https?:\/\/[^\s]+)/g).map((part, i) =>
+                                            part.match(/^https?:\/\//) ? (
+                                                <a key={i} href={part} target="_blank" rel="noopener noreferrer" className="text-indigo-400 hover:underline break-all">
+                                                    {part}
+                                                </a>
+                                            ) : (
+                                                part
+                                            )
                                         )}
-                                        <span className="truncate max-w-[150px] text-indigo-300 underline decoration-indigo-300/30">
-                                            {msg.fileName}
-                                        </span>
-                                    </a>
+                                    </div>
+                                )}
+                                {msg.fileUrl && (
+                                    <div className="mt-1">
+                                        {msg.fileType?.startsWith('image/') ? (
+                                            <a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" className="block">
+                                                <img
+                                                    src={msg.fileUrl}
+                                                    alt={msg.fileName}
+                                                    className="max-w-full rounded-md border border-white/10 hover:opacity-90 transition-opacity"
+                                                    style={{ maxHeight: '200px' }}
+                                                />
+                                            </a>
+                                        ) : (
+                                            <a
+                                                href={msg.fileUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex items-center gap-2 p-2 bg-slate-700/50 rounded hover:bg-slate-700 transition-colors group"
+                                            >
+                                                <FileText size={16} className="text-indigo-400 group-hover:text-indigo-300" />
+                                                <span className="truncate max-w-[150px] text-indigo-300 underline decoration-indigo-300/30 group-hover:text-indigo-200">
+                                                    {msg.fileName}
+                                                </span>
+                                            </a>
+                                        )}
+                                    </div>
                                 )}
                             </div>
                         </div>
