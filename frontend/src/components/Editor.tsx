@@ -5,6 +5,7 @@ import { EditorState } from '@codemirror/state';
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { javascript } from '@codemirror/lang-javascript';
 import { yCollab } from 'y-codemirror.next';
+import { jsPDF } from 'jspdf';
 import { useCollaborativeDocument } from '../hooks/useCollaborativeDocument';
 import { useAuthStore } from '../stores/authStore';
 import { useUiStore } from '../stores/uiStore';
@@ -12,6 +13,8 @@ import { darkTheme, lightTheme } from '../utils/editorThemes';
 import api from '../services/api.service';
 import { VersionHistory } from './VersionHistory';
 import { Chat } from './Chat';
+import { UserAvatars } from './UserAvatars';
+import { MarkdownToolbar } from './MarkdownToolbar';
 
 interface EditorProps {
     slug: string;
@@ -33,6 +36,8 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
     const [showChat, setShowChat] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
     const [stats, setStats] = useState({ words: 0, chars: 0 });
+    // Force re-render to pass view to toolbar
+    const [, setTick] = useState(0);
 
     useEffect(() => {
         if (!ydoc) return;
@@ -98,6 +103,20 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
         a.click();
         document.body.removeChild(a);
         URL.revokeObjectURL(url);
+    };
+
+    const handleExportPdf = () => {
+        if (!viewRef.current) return;
+        const content = viewRef.current.state.doc.toString();
+        const doc = new jsPDF();
+
+        doc.setFont("courier");
+        doc.setFontSize(10);
+
+        const splitText = doc.splitTextToSize(content, 190);
+        doc.text(splitText, 10, 10);
+
+        doc.save(`${title || slug}.pdf`);
     };
 
     const handleImport = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -190,12 +209,13 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
         });
 
         viewRef.current = view;
+        setTick(t => t + 1); // Trigger re-render to pass view to toolbar
 
         return () => {
             view.destroy();
             viewRef.current = null;
         };
-    }, [ydoc, provider, theme]); // Re-create editor when theme changes
+    }, [ydoc, provider, theme]);
 
     const isDark = theme === 'dark';
 
@@ -236,6 +256,7 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
                                     {title ?? slug}
                                 </h1>
                             )}
+                            {provider && <UserAvatars provider={provider} />}
                         </div>
                         <div className="flex items-center gap-4">
                             <button
@@ -254,12 +275,27 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
                                     accept=".txt,.js,.py,.md,.html,.css,.json"
                                 />
                             </label>
-                            <button
-                                onClick={handleDownload}
-                                className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${isDark ? 'bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'}`}
-                            >
-                                ↓ Download
-                            </button>
+                            <div className="relative group">
+                                <button
+                                    className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${isDark ? 'bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'}`}
+                                >
+                                    ↓ Download
+                                </button>
+                                <div className={`absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 z-50 hidden group-hover:block ${isDark ? 'bg-slate-800 border border-white/10' : 'bg-white border border-slate-200'}`}>
+                                    <button
+                                        onClick={handleDownload}
+                                        className={`block w-full text-left px-4 py-2 text-sm ${isDark ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-100'}`}
+                                    >
+                                        Text File (.txt)
+                                    </button>
+                                    <button
+                                        onClick={handleExportPdf}
+                                        className={`block w-full text-left px-4 py-2 text-sm ${isDark ? 'text-slate-300 hover:bg-slate-700' : 'text-slate-700 hover:bg-slate-100'}`}
+                                    >
+                                        PDF Document (.pdf)
+                                    </button>
+                                </div>
+                            </div>
                             <button
                                 onClick={handleShare}
                                 className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${isDark ? 'bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20' : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'}`}
@@ -304,8 +340,9 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
 
                 {/* Editor */}
                 <main className="flex-1 overflow-hidden p-6 flex flex-col">
-                    <div className={`flex-1 rounded-t-2xl border shadow-xl overflow-hidden ${isDark ? 'border-white/5 bg-slate-900/60' : 'border-slate-200 bg-white'}`}>
-                        <div ref={editorRef} className="h-full" />
+                    <div className={`flex-1 rounded-t-2xl border shadow-xl overflow-hidden flex flex-col ${isDark ? 'border-white/5 bg-slate-900/60' : 'border-slate-200 bg-white'}`}>
+                        <MarkdownToolbar view={viewRef.current} />
+                        <div ref={editorRef} className="flex-1 overflow-auto" />
                     </div>
                     {/* Footer Stats */}
                     <div className={`rounded-b-2xl border-x border-b px-4 py-2 text-xs flex justify-end gap-4 ${isDark ? 'border-white/5 bg-slate-900/80 text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-500'}`}>
