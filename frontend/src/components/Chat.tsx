@@ -132,14 +132,15 @@ export const Chat = ({ ydoc, provider, onClose }: ChatProps) => {
                                     </div>
                                 )}
                                 {msg.fileUrl && (
-                                    <div className="mt-1">
-                                        {msg.fileType?.startsWith('image/') ? (
+                                    <div className="mt-2">
+                                        {(msg.fileType?.startsWith('image/') || /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(msg.fileName || '')) ? (
                                             <a href={msg.fileUrl} target="_blank" rel="noopener noreferrer" className="block">
                                                 <img
                                                     src={msg.fileUrl}
                                                     alt={msg.fileName}
-                                                    className="max-w-full rounded-md border border-white/10 hover:opacity-90 transition-opacity"
-                                                    style={{ maxHeight: '200px' }}
+                                                    className="max-w-full rounded-lg border border-white/10 hover:opacity-95 transition-opacity"
+                                                    style={{ maxHeight: '300px', width: 'auto' }}
+                                                    loading="eager"
                                                 />
                                             </a>
                                         ) : (
@@ -147,12 +148,15 @@ export const Chat = ({ ydoc, provider, onClose }: ChatProps) => {
                                                 href={msg.fileUrl}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="flex items-center gap-2 p-2 bg-slate-700/50 rounded hover:bg-slate-700 transition-colors group"
+                                                className="flex items-center gap-3 p-3 bg-slate-700/50 rounded-lg hover:bg-slate-700 transition-colors group border border-white/5"
                                             >
-                                                <FileText size={16} className="text-indigo-400 group-hover:text-indigo-300" />
-                                                <span className="truncate max-w-[150px] text-indigo-300 underline decoration-indigo-300/30 group-hover:text-indigo-200">
-                                                    {msg.fileName}
-                                                </span>
+                                                <FileText size={20} className="text-indigo-400 group-hover:text-indigo-300" />
+                                                <div className="flex flex-col overflow-hidden">
+                                                    <span className="truncate text-indigo-300 font-medium group-hover:text-indigo-200">
+                                                        {msg.fileName}
+                                                    </span>
+                                                    <span className="text-xs text-slate-400">Click to open</span>
+                                                </div>
                                             </a>
                                         )}
                                     </div>
