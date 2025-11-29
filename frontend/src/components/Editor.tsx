@@ -6,7 +6,7 @@ import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { javascript } from '@codemirror/lang-javascript';
 import { yCollab } from 'y-codemirror.next';
 import { jsPDF } from 'jspdf';
-import { Menu, X, Image as ImageIcon } from 'lucide-react';
+import { Menu, X, Image as ImageIcon, Upload } from 'lucide-react';
 import { useCollaborativeDocument } from '../hooks/useCollaborativeDocument';
 import { useAuthStore } from '../stores/authStore';
 import { useUiStore } from '../stores/uiStore';
@@ -418,7 +418,8 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
 
                             <div className="grid grid-cols-2 gap-2">
                                 <label className={`flex items-center justify-center gap-2 rounded-md px-4 py-3 text-sm font-medium transition-colors cursor-pointer ${isDark ? 'bg-emerald-500/10 text-emerald-300' : 'bg-emerald-50 text-emerald-600'}`}>
-                                    ↑ Import
+                                    <Upload size={16} className="mr-2" />
+                                    Import
                                     <input
                                         type="file"
                                         onChange={handleImport}
@@ -427,7 +428,8 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
                                     />
                                 </label>
                                 <label className={`flex items-center justify-center gap-2 rounded-md px-4 py-3 text-sm font-medium transition-colors cursor-pointer ${isDark ? 'bg-pink-500/10 text-pink-300' : 'bg-pink-50 text-pink-600'}`}>
-                                    🖼️ Image
+                                    <ImageIcon size={16} className="mr-2" />
+                                    Image
                                     <input
                                         type="file"
                                         onChange={handleImageUpload}
