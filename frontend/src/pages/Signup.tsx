@@ -48,9 +48,6 @@ export const Signup = () => {
                 <div>
                     <h1 className="text-2xl font-semibold text-white">Create account</h1>
                     <p className="text-sm text-slate-400">Invite your team and start collaborating.</p>
-                    <div className="mt-2 p-2 bg-slate-800 rounded text-xs text-slate-500 font-mono break-all">
-                        DEBUG: API_URL={import.meta.env.VITE_API_URL || 'undefined'}
-                    </div>
                 </div>
                 {error && <p className="rounded-md bg-rose-500/10 px-3 py-2 text-sm text-rose-300">{error}</p>}
                 {success && <p className="rounded-md bg-emerald-500/10 px-3 py-2 text-sm text-emerald-300">{success}</p>}
