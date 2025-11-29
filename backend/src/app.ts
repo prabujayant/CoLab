@@ -14,22 +14,23 @@ const app = express();
 
 app.use(helmet());
 app.set('trust proxy', 1); // Enable if behind reverse proxy (Heroku, etc)
-cors({
-    origin: (origin, callback) => {
-        // Allow requests with no origin (like mobile apps or curl requests)
-        if (!origin) return callback(null, true);
+app.use(
+    cors({
+        origin: (origin, callback) => {
+            // Allow requests with no origin (like mobile apps or curl requests)
+            if (!origin) return callback(null, true);
 
-        // Allow localhost
-        if (origin.includes('localhost')) return callback(null, true);
+            // Allow localhost
+            if (origin.includes('localhost')) return callback(null, true);
 
-        // Allow Render domains
-        if (origin.endsWith('.onrender.com')) return callback(null, true);
+            // Allow Render domains
+            if (origin.endsWith('.onrender.com')) return callback(null, true);
 
-        // Fallback: allow all for this demo
-        return callback(null, true);
-    },
-    credentials: true
-})
+            // Fallback: allow all for this demo
+            return callback(null, true);
+        },
+        credentials: true
+    })
 );
 app.use(express.json({ limit: '1mb' }));
 app.use(cookieParser());
