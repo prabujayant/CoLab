@@ -6,6 +6,7 @@ import { defaultKeymap, history, historyKeymap } from '@codemirror/commands';
 import { javascript } from '@codemirror/lang-javascript';
 import { yCollab } from 'y-codemirror.next';
 import { jsPDF } from 'jspdf';
+import { Menu, X } from 'lucide-react';
 import { useCollaborativeDocument } from '../hooks/useCollaborativeDocument';
 import { useAuthStore } from '../stores/authStore';
 import { useUiStore } from '../stores/uiStore';
@@ -34,6 +35,7 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
     const [editedTitle, setEditedTitle] = useState(title ?? slug);
     const [showHistory, setShowHistory] = useState(false);
     const [showChat, setShowChat] = useState(false);
+    const [showMobileMenu, setShowMobileMenu] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
     const [stats, setStats] = useState({ words: 0, chars: 0 });
     // Force re-render to pass view to toolbar
@@ -230,7 +232,7 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
                                 to="/"
                                 className={`${isDark ? 'text-slate-400 hover:text-indigo-400' : 'text-slate-500 hover:text-indigo-600'} transition-colors text-sm font-medium`}
                             >
-                                ← Back
+                                ←
                             </Link>
                             {isEditingTitle ? (
                                 <input
@@ -245,20 +247,22 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
                                             setIsEditingTitle(false);
                                         }
                                     }}
-                                    className={`rounded-md border px-3 py-1 text-lg font-semibold outline-none focus:border-indigo-500 ${isDark ? 'border-white/10 bg-slate-900 text-white' : 'border-slate-300 bg-white text-slate-900'}`}
+                                    className={`w-32 md:w-auto rounded-md border px-3 py-1 text-lg font-semibold outline-none focus:border-indigo-500 ${isDark ? 'border-white/10 bg-slate-900 text-white' : 'border-slate-300 bg-white text-slate-900'}`}
                                     autoFocus
                                 />
                             ) : (
                                 <h1
-                                    className={`text-lg font-semibold cursor-pointer transition-colors ${isDark ? 'text-white hover:text-slate-300' : 'text-slate-900 hover:text-slate-600'}`}
+                                    className={`text-lg font-semibold cursor-pointer transition-colors truncate max-w-[150px] md:max-w-none ${isDark ? 'text-white hover:text-slate-300' : 'text-slate-900 hover:text-slate-600'}`}
                                     onClick={() => setIsEditingTitle(true)}
                                 >
                                     {title ?? slug}
                                 </h1>
                             )}
-                            {provider && <UserAvatars provider={provider} />}
+                            {provider && <div className="hidden md:block"><UserAvatars provider={provider} /></div>}
                         </div>
-                        <div className="flex items-center gap-4">
+
+                        {/* Desktop Actions */}
+                        <div className="hidden md:flex items-center gap-4">
                             <button
                                 onClick={toggleTheme}
                                 className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
@@ -335,7 +339,96 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
                                 </span>
                             </div>
                         </div>
+
+                        {/* Mobile Actions */}
+                        <div className="flex md:hidden items-center gap-2">
+                            {provider && <UserAvatars provider={provider} />}
+                            <button
+                                onClick={() => setShowChat(!showChat)}
+                                className={`relative p-2 rounded-md transition-colors ${showChat
+                                    ? (isDark ? 'bg-emerald-500/20 text-emerald-300' : 'bg-emerald-100 text-emerald-700')
+                                    : (isDark ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900')
+                                    }`}
+                            >
+                                💬
+                                {unreadCount > 0 && (
+                                    <span className="absolute top-0 right-0 flex h-3 w-3 items-center justify-center rounded-full bg-rose-500 text-[8px] text-white">
+                                        {unreadCount}
+                                    </span>
+                                )}
+                            </button>
+                            <button
+                                onClick={() => setShowMobileMenu(!showMobileMenu)}
+                                className={`p-2 rounded-md transition-colors ${isDark ? 'text-slate-400 hover:text-white' : 'text-slate-500 hover:text-slate-900'}`}
+                            >
+                                {showMobileMenu ? <X size={20} /> : <Menu size={20} />}
+                            </button>
+                        </div>
                     </div>
+
+                    {/* Mobile Menu */}
+                    {showMobileMenu && (
+                        <div className="md:hidden mt-4 pt-4 border-t border-white/5 space-y-2 animate-in slide-in-from-top-2">
+                            <div className="flex items-center justify-between mb-4">
+                                <span className={`text-xs font-medium ${isDark ? 'text-slate-500' : 'text-slate-400'}`}>
+                                    {status === 'connected' ? '🟢 Connected' : '🟡 Reconnecting...'}
+                                </span>
+                                <button
+                                    onClick={toggleTheme}
+                                    className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm font-medium ${isDark ? 'bg-slate-800 text-slate-300' : 'bg-slate-100 text-slate-600'}`}
+                                >
+                                    {isDark ? '☀️ Light Mode' : '🌙 Dark Mode'}
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2">
+                                <label className={`flex items-center justify-center gap-2 rounded-md px-4 py-3 text-sm font-medium transition-colors cursor-pointer ${isDark ? 'bg-emerald-500/10 text-emerald-300' : 'bg-emerald-50 text-emerald-600'}`}>
+                                    ↑ Import
+                                    <input
+                                        type="file"
+                                        onChange={handleImport}
+                                        className="hidden"
+                                        accept=".txt,.js,.py,.md,.html,.css,.json"
+                                    />
+                                </label>
+                                <button
+                                    onClick={handleShare}
+                                    className={`rounded-md px-4 py-3 text-sm font-medium transition-colors ${isDark ? 'bg-cyan-500/10 text-cyan-300' : 'bg-cyan-50 text-cyan-600'}`}
+                                >
+                                    🔗 Share
+                                </button>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2">
+                                <button
+                                    onClick={handleDownload}
+                                    className={`rounded-md px-4 py-3 text-sm font-medium transition-colors ${isDark ? 'bg-indigo-500/10 text-indigo-300' : 'bg-indigo-50 text-indigo-600'}`}
+                                >
+                                    ↓ Text
+                                </button>
+                                <button
+                                    onClick={handleExportPdf}
+                                    className={`rounded-md px-4 py-3 text-sm font-medium transition-colors ${isDark ? 'bg-indigo-500/10 text-indigo-300' : 'bg-indigo-50 text-indigo-600'}`}
+                                >
+                                    ↓ PDF
+                                </button>
+                            </div>
+
+                            <button
+                                onClick={() => { setShowHistory(true); setShowMobileMenu(false); }}
+                                className={`w-full rounded-md px-4 py-3 text-sm font-medium transition-colors ${isDark ? 'bg-purple-500/10 text-purple-300' : 'bg-purple-50 text-purple-600'}`}
+                            >
+                                📜 Version History
+                            </button>
+
+                            <button
+                                onClick={handleDelete}
+                                className={`w-full rounded-md px-4 py-3 text-sm font-medium transition-colors ${isDark ? 'bg-rose-500/10 text-rose-300' : 'bg-rose-50 text-rose-600'}`}
+                            >
+                                🗑️ Delete Document
+                            </button>
+                        </div>
+                    )}
                 </header>
 
                 {/* Editor */}

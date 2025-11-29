@@ -64,7 +64,7 @@ export const Chat = ({ ydoc, provider, onClose }: ChatProps) => {
     };
 
     return (
-        <div className="w-80 border-l border-white/5 bg-slate-900/95 backdrop-blur-sm flex flex-col h-screen absolute right-0 top-0 z-50 shadow-2xl">
+        <div className="w-full md:w-80 border-l border-white/5 bg-slate-900/95 backdrop-blur-sm flex flex-col h-screen absolute right-0 top-0 z-50 shadow-2xl">
             <div className="flex items-center justify-between p-4 border-b border-white/5">
                 <h2 className="text-lg font-semibold text-white">Chat</h2>
                 <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors">✕</button>
