@@ -23,6 +23,7 @@ const loginSchema = z.object({
 });
 
 export const register = async (req: Request, res: Response) => {
+    console.log('Register request:', req.body);
     try {
         const payload = registerSchema.parse(req.body);
         const existing = await prisma.user.findUnique({ where: { email: payload.email.toLowerCase() } });
@@ -67,19 +68,29 @@ export const register = async (req: Request, res: Response) => {
 };
 
 export const login = async (req: Request, res: Response) => {
+    console.log('Login request received:', req.body);
     try {
         const payload = loginSchema.parse(req.body);
+        console.log('Payload parsed successfully');
+
         const user = await prisma.user.findUnique({ where: { email: payload.email.toLowerCase() } });
+        console.log('User lookup result:', user ? 'Found' : 'Not Found');
 
         if (!user) {
+            console.log('User not found, returning 401');
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
+        console.log('Comparing password...');
         const passwordMatch = await bcrypt.compare(payload.password, user.password);
+        console.log('Password match:', passwordMatch);
+
         if (!passwordMatch) {
+            console.log('Password mismatch, returning 401');
             return res.status(401).json({ error: 'Invalid credentials' });
         }
 
+        console.log('Generating tokens...');
         const token = jwt.sign({ userId: user.id, email: user.email }, JWT_SECRET, { expiresIn: TOKEN_TTL_SECONDS });
         const refreshToken = jwt.sign({ userId: user.id }, REFRESH_SECRET, { expiresIn: REFRESH_TOKEN_TTL_SECONDS });
 
@@ -91,6 +102,7 @@ export const login = async (req: Request, res: Response) => {
                 expiresAt: new Date(Date.now() + REFRESH_TOKEN_TTL_SECONDS * 1000)
             }
         });
+        console.log('Login successful, sending response');
 
         res.json({
             token,
@@ -102,7 +114,7 @@ export const login = async (req: Request, res: Response) => {
             }
         });
     } catch (error: any) {
-        console.error('Login error', error);
+        console.error('Login error detailed:', error);
         const status = error.status || (error.name === 'ZodError' ? 400 : 500);
         res.status(status).json({ error: error.message ?? 'Login failed' });
     }

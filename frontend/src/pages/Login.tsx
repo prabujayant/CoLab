@@ -17,7 +17,7 @@ export const Login = () => {
         setError(null);
         try {
             const { data } = await api.post('/auth/login', { email, password });
-            setAuth(data.token, data.user);
+            setAuth(data.token, data.refreshToken, data.user);
             navigate('/');
         } catch (err: any) {
             setError(err?.response?.data?.error ?? 'Unable to log in');
