@@ -41,7 +41,7 @@ services:
         fromService:
           type: web
           name: colab-backend
-          property: url
+          property: host
 
 databases:
   - name: colab-db

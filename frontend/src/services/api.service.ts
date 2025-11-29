@@ -1,8 +1,15 @@
 import axios from 'axios';
 import { useAuthStore } from '../stores/authStore';
 
+const getBaseUrl = () => {
+    const envUrl = import.meta.env.VITE_API_URL;
+    if (!envUrl) return 'http://localhost:3000/api';
+    if (envUrl.startsWith('http')) return envUrl;
+    return `https://${envUrl}/api`;
+};
+
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api',
+    baseURL: getBaseUrl(),
     withCredentials: true
 });
 
@@ -56,7 +63,7 @@ api.interceptors.response.use(
                     throw new Error('No refresh token');
                 }
 
-                const response = await axios.post(`${import.meta.env.VITE_API_URL || 'http://localhost:3000/api'}/auth/refresh`, {
+                const response = await axios.post(`${getBaseUrl()}/auth/refresh`, {
                     refreshToken
                 });
 
