@@ -7,6 +7,8 @@ import { javascript } from '@codemirror/lang-javascript';
 import { yCollab } from 'y-codemirror.next';
 import { useCollaborativeDocument } from '../hooks/useCollaborativeDocument';
 import { useAuthStore } from '../stores/authStore';
+import { useUiStore } from '../stores/uiStore';
+import { darkTheme, lightTheme } from '../utils/editorThemes';
 import api from '../services/api.service';
 import { VersionHistory } from './VersionHistory';
 import { Chat } from './Chat';
@@ -18,6 +20,7 @@ interface EditorProps {
 
 export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
     const { user } = useAuthStore();
+    const { theme, toggleTheme } = useUiStore();
     const { ydoc, provider, status } = useCollaborativeDocument({
         slug,
         user: user ?? undefined
@@ -29,6 +32,7 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
     const [showHistory, setShowHistory] = useState(false);
     const [showChat, setShowChat] = useState(false);
     const [unreadCount, setUnreadCount] = useState(0);
+    const [stats, setStats] = useState({ words: 0, chars: 0 });
 
     useEffect(() => {
         if (!ydoc) return;
@@ -146,6 +150,12 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
 
         const ytext = ydoc.getText('monaco');
 
+        const updateStats = (docString: string) => {
+            const words = docString.trim() === '' ? 0 : docString.trim().split(/\s+/).length;
+            const chars = docString.length;
+            setStats({ words, chars });
+        };
+
         const state = EditorState.create({
             doc: ytext.toString(),
             extensions: [
@@ -162,66 +172,17 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
                 keymap.of([...defaultKeymap, ...historyKeymap]),
                 javascript(),
                 yCollab(ytext, provider.awareness),
-                EditorView.theme({
-                    '&': {
-                        height: '100%',
-                        backgroundColor: '#0f172a',
-                        color: '#e2e8f0'
-                    },
-                    '.cm-content': {
-                        fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
-                        fontSize: '14px',
-                        padding: '16px 0'
-                    },
-                    '.cm-gutters': {
-                        backgroundColor: '#1e293b',
-                        color: '#64748b',
-                        border: 'none',
-                        paddingRight: '8px'
-                    },
-                    '.cm-activeLineGutter': {
-                        backgroundColor: '#334155'
-                    },
-                    '.cm-activeLine': {
-                        backgroundColor: 'rgba(99, 102, 241, 0.05)'
-                    },
-                    '.cm-selectionBackground': {
-                        backgroundColor: 'rgba(99, 102, 241, 0.2) !important'
-                    },
-                    '&.cm-focused .cm-selectionBackground': {
-                        backgroundColor: 'rgba(99, 102, 241, 0.3) !important'
-                    },
-                    '.cm-cursor': {
-                        borderLeftColor: '#6366f1'
-                    },
-                    '.cm-ySelectionInfo': {
-                        position: 'absolute',
-                        top: '-1.4em',
-                        left: '-1px',
-                        fontSize: '11px',
-                        fontFamily: 'ui-sans-serif, system-ui, sans-serif',
-                        fontWeight: '500',
-                        padding: '2px 6px',
-                        borderRadius: '4px',
-                        color: 'white',
-                        whiteSpace: 'nowrap',
-                        zIndex: '101',
-                        transition: 'opacity 0.3s ease',
-                        pointerEvents: 'none'
-                    },
-                    '.cm-ySelectionCaret': {
-                        position: 'relative',
-                        borderLeft: '2px solid',
-                        marginLeft: '-1px',
-                        marginRight: '-1px',
-                        boxSizing: 'border-box'
-                    },
-                    '.cm-ySelection': {
-                        opacity: '0.3'
+                theme === 'dark' ? darkTheme : lightTheme,
+                EditorView.updateListener.of((update) => {
+                    if (update.docChanged) {
+                        updateStats(update.state.doc.toString());
                     }
                 })
             ]
         });
+
+        // Initial stats
+        updateStats(ytext.toString());
 
         const view = new EditorView({
             state,
@@ -234,18 +195,20 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
             view.destroy();
             viewRef.current = null;
         };
-    }, [ydoc, provider]);
+    }, [ydoc, provider, theme]); // Re-create editor when theme changes
+
+    const isDark = theme === 'dark';
 
     return (
-        <div className="flex min-h-screen bg-slate-950">
+        <div className={`flex min-h-screen ${isDark ? 'bg-slate-950' : 'bg-slate-50'}`}>
             <div className="flex flex-1 flex-col">
                 {/* Header */}
-                <header className="border-b border-white/5 bg-slate-900/60 px-6 py-4">
+                <header className={`border-b px-6 py-4 ${isDark ? 'border-white/5 bg-slate-900/60' : 'border-slate-200 bg-white'}`}>
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
                             <Link
                                 to="/"
-                                className="text-slate-400 hover:text-indigo-400 transition-colors text-sm font-medium"
+                                className={`${isDark ? 'text-slate-400 hover:text-indigo-400' : 'text-slate-500 hover:text-indigo-600'} transition-colors text-sm font-medium`}
                             >
                                 ← Back
                             </Link>
@@ -262,12 +225,12 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
                                             setIsEditingTitle(false);
                                         }
                                     }}
-                                    className="rounded-md border border-white/10 bg-slate-900 px-3 py-1 text-lg font-semibold text-white outline-none focus:border-indigo-500"
+                                    className={`rounded-md border px-3 py-1 text-lg font-semibold outline-none focus:border-indigo-500 ${isDark ? 'border-white/10 bg-slate-900 text-white' : 'border-slate-300 bg-white text-slate-900'}`}
                                     autoFocus
                                 />
                             ) : (
                                 <h1
-                                    className="text-lg font-semibold text-white cursor-pointer hover:text-slate-300 transition-colors"
+                                    className={`text-lg font-semibold cursor-pointer transition-colors ${isDark ? 'text-white hover:text-slate-300' : 'text-slate-900 hover:text-slate-600'}`}
                                     onClick={() => setIsEditingTitle(true)}
                                 >
                                     {title ?? slug}
@@ -275,7 +238,14 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
                             )}
                         </div>
                         <div className="flex items-center gap-4">
-                            <label className="rounded-md bg-emerald-500/10 px-4 py-2 text-sm font-medium text-emerald-300 hover:bg-emerald-500/20 transition-colors cursor-pointer">
+                            <button
+                                onClick={toggleTheme}
+                                className={`rounded-md px-3 py-2 text-sm font-medium transition-colors ${isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
+                                title={isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+                            >
+                                {isDark ? '☀️' : '🌙'}
+                            </button>
+                            <label className={`rounded-md px-4 py-2 text-sm font-medium transition-colors cursor-pointer ${isDark ? 'bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100'}`}>
                                 ↑ Import
                                 <input
                                     type="file"
@@ -286,21 +256,21 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
                             </label>
                             <button
                                 onClick={handleDownload}
-                                className="rounded-md bg-indigo-500/10 px-4 py-2 text-sm font-medium text-indigo-300 hover:bg-indigo-500/20 transition-colors"
+                                className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${isDark ? 'bg-indigo-500/10 text-indigo-300 hover:bg-indigo-500/20' : 'bg-indigo-50 text-indigo-600 hover:bg-indigo-100'}`}
                             >
                                 ↓ Download
                             </button>
                             <button
                                 onClick={handleShare}
-                                className="rounded-md bg-cyan-500/10 px-4 py-2 text-sm font-medium text-cyan-300 hover:bg-cyan-500/20 transition-colors"
+                                className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${isDark ? 'bg-cyan-500/10 text-cyan-300 hover:bg-cyan-500/20' : 'bg-cyan-50 text-cyan-600 hover:bg-cyan-100'}`}
                             >
                                 🔗 Share
                             </button>
                             <button
                                 onClick={() => setShowChat(!showChat)}
                                 className={`relative rounded-md px-4 py-2 text-sm font-medium transition-colors ${showChat
-                                    ? 'bg-emerald-500/20 text-emerald-300'
-                                    : 'bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20'
+                                    ? (isDark ? 'bg-emerald-500/20 text-emerald-300' : 'bg-emerald-100 text-emerald-700')
+                                    : (isDark ? 'bg-emerald-500/10 text-emerald-300 hover:bg-emerald-500/20' : 'bg-emerald-50 text-emerald-600 hover:bg-emerald-100')
                                     }`}
                             >
                                 💬 Chat
@@ -312,19 +282,19 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
                             </button>
                             <button
                                 onClick={() => setShowHistory(true)}
-                                className="rounded-md bg-purple-500/10 px-4 py-2 text-sm font-medium text-purple-300 hover:bg-purple-500/20 transition-colors"
+                                className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${isDark ? 'bg-purple-500/10 text-purple-300 hover:bg-purple-500/20' : 'bg-purple-50 text-purple-600 hover:bg-purple-100'}`}
                             >
                                 📜 History
                             </button>
                             <button
                                 onClick={handleDelete}
-                                className="rounded-md bg-rose-500/10 px-4 py-2 text-sm font-medium text-rose-300 hover:bg-rose-500/20 transition-colors"
+                                className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${isDark ? 'bg-rose-500/10 text-rose-300 hover:bg-rose-500/20' : 'bg-rose-50 text-rose-600 hover:bg-rose-100'}`}
                             >
                                 Delete
                             </button>
                             <div className="flex items-center gap-2 text-sm">
                                 <span className={`h-2 w-2 rounded-full ${status === 'connected' ? 'bg-emerald-400' : 'bg-amber-400'}`} />
-                                <span className="text-slate-400">
+                                <span className={isDark ? 'text-slate-400' : 'text-slate-500'}>
                                     {status === 'connected' ? 'Connected' : 'Reconnecting...'}
                                 </span>
                             </div>
@@ -333,9 +303,14 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
                 </header>
 
                 {/* Editor */}
-                <main className="flex-1 overflow-hidden p-6">
-                    <div className="h-full rounded-2xl border border-white/5 bg-slate-900/60 shadow-xl overflow-hidden">
+                <main className="flex-1 overflow-hidden p-6 flex flex-col">
+                    <div className={`flex-1 rounded-t-2xl border shadow-xl overflow-hidden ${isDark ? 'border-white/5 bg-slate-900/60' : 'border-slate-200 bg-white'}`}>
                         <div ref={editorRef} className="h-full" />
+                    </div>
+                    {/* Footer Stats */}
+                    <div className={`rounded-b-2xl border-x border-b px-4 py-2 text-xs flex justify-end gap-4 ${isDark ? 'border-white/5 bg-slate-900/80 text-slate-400' : 'border-slate-200 bg-slate-50 text-slate-500'}`}>
+                        <span>{stats.words} words</span>
+                        <span>{stats.chars} characters</span>
                     </div>
                 </main>
             </div>
