@@ -12,7 +12,7 @@ services:
     env: node
     plan: free
     buildCommand: cd backend && npm install --include=dev && npx prisma generate && npm run build
-    startCommand: cd backend && npm run start
+    startCommand: cd backend && npx prisma migrate deploy && npm run start
     envVars:
       - key: NODE_ENV
         value: production
