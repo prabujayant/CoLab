@@ -4,7 +4,28 @@ import { WebsocketProvider } from 'y-websocket';
 import { IndexeddbPersistence } from 'y-indexeddb';
 import { Awareness } from 'y-protocols/awareness';
 
-const WS_URL = import.meta.env.VITE_COLLAB_URL || 'ws://localhost:3000';
+const getWsUrl = () => {
+    let url = import.meta.env.VITE_COLLAB_URL;
+    if (url) return url;
+
+    url = import.meta.env.VITE_API_URL;
+    if (!url) return 'ws://localhost:3000';
+
+    // Handle Render internal hostnames / slugs
+    if (!url.includes('.') && !url.includes(':') && !url.startsWith('http')) {
+        url = `${url}.onrender.com`;
+    }
+
+    // Add protocol if missing (assume secure for production)
+    if (!url.startsWith('http') && !url.startsWith('ws')) {
+        url = `https://${url}`;
+    }
+
+    // Replace protocol
+    return url.replace(/^http/, 'ws');
+};
+
+const WS_URL = getWsUrl();
 
 export interface PresenceUser {
     id: string;
