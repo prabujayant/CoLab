@@ -60,3 +60,13 @@ model UserActivity {
   
   @@unique([userId, documentId])
 }
+
+model FileAttachment {
+  id        String   @id @default(uuid())
+  filename  String
+  mimeType  String
+  size      Int
+  data      Bytes
+  uploaderId String?
+  createdAt DateTime @default(now())
+}
