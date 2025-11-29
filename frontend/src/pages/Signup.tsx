@@ -23,7 +23,17 @@ export const Signup = () => {
             setSuccess('Account created! Please sign in.');
             setTimeout(() => navigate('/login'), 1200);
         } catch (err: any) {
-            setError(err?.response?.data?.error ?? 'Unable to sign up');
+            console.error('Signup error:', err);
+            const status = err?.response?.status;
+            const statusText = err?.response?.statusText;
+            const serverError = err?.response?.data?.error;
+
+            let errorMessage = 'Unable to sign up';
+            if (serverError) errorMessage = serverError;
+            else if (status) errorMessage = `Error ${status}: ${statusText || 'Unknown error'}`;
+            else if (err.message) errorMessage = err.message;
+
+            setError(errorMessage);
         } finally {
             setLoading(false);
         }
