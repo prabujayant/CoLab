@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String         @id @default(uuid())
+  email        String         @unique
+  password     String
+  displayName  String?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+  documents    Document[]
+  refreshTokens RefreshToken[]
+  userActivities UserActivity[]
+}
+
+model RefreshToken {
+  id        String   @id @default(uuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+}
+
+
+model Document {
+  id        String           @id @default(uuid())
+  title     String
+  slug      String           @unique
+  content   Bytes?
+  ownerId   String
+  owner     User             @relation(fields: [ownerId], references: [id])
+  updates   DocumentUpdate[]
+  userActivities UserActivity[]
+  createdAt DateTime         @default(now())
+  updatedAt DateTime         @updatedAt
+}
+
+model DocumentUpdate {
+  id         String   @id @default(uuid())
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  update     Bytes
+  createdAt  DateTime @default(now())
+}
+
+model UserActivity {
+  id         String   @id @default(uuid())
+  userId     String
+  documentId String
+  lastVisit  DateTime @default(now())
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, documentId])
+}
