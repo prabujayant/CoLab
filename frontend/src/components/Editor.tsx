@@ -200,10 +200,18 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
                 yCollab(ytext, provider.awareness),
                 themeCompartment.current.of([
                     theme === 'dark' ? darkTheme : lightTheme,
-                    EditorView.theme({
-                        '.cm-content': {
-                            fontFamily: useUiStore.getState().fontFamily,
+                    EditorView.baseTheme({
+                        '&': {
                             fontSize: `${useUiStore.getState().fontSize}px`,
+                            fontFamily: useUiStore.getState().fontFamily,
+                        },
+                        '.cm-content': {
+                            fontSize: `${useUiStore.getState().fontSize}px !important`,
+                            fontFamily: `${useUiStore.getState().fontFamily} !important`,
+                        },
+                        '.cm-line': {
+                            fontSize: `${useUiStore.getState().fontSize}px !important`,
+                            fontFamily: `${useUiStore.getState().fontFamily} !important`,
                         }
                     })
                 ]),
@@ -240,10 +248,18 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
             viewRef.current.dispatch({
                 effects: themeCompartment.current.reconfigure([
                     theme === 'dark' ? darkTheme : lightTheme,
-                    EditorView.theme({
-                        '.cm-content': {
-                            fontFamily: fontFamily,
+                    EditorView.baseTheme({
+                        '&': {
                             fontSize: `${fontSize}px`,
+                            fontFamily: fontFamily,
+                        },
+                        '.cm-content': {
+                            fontSize: `${fontSize}px !important`,
+                            fontFamily: `${fontFamily} !important`,
+                        },
+                        '.cm-line': {
+                            fontSize: `${fontSize}px !important`,
+                            fontFamily: `${fontFamily} !important`,
                         }
                     })
                 ])
