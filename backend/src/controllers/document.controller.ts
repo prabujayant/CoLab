@@ -14,7 +14,12 @@ export const listDocuments = async (req: AuthRequest, res: Response) => {
     }
 
     const documents = await prisma.document.findMany({
-        where: { ownerId: req.user.id },
+        where: {
+            OR: [
+                { ownerId: req.user.id },
+                { userActivities: { some: { userId: req.user.id } } }
+            ]
+        },
         orderBy: { updatedAt: 'desc' },
         select: {
             id: true,
@@ -79,6 +84,29 @@ export const getDocument = async (req: AuthRequest, res: Response) => {
 
     if (!document) {
         return res.status(404).json({ error: 'Document not found' });
+    }
+
+    // Record visit
+    try {
+        await prisma.userActivity.upsert({
+            where: {
+                userId_documentId: {
+                    userId: req.user.id,
+                    documentId: document.id
+                }
+            },
+            create: {
+                userId: req.user.id,
+                documentId: document.id,
+                lastVisit: new Date()
+            },
+            update: {
+                lastVisit: new Date()
+            }
+        });
+    } catch (error) {
+        console.error('Failed to record document visit', error);
+        // Don't fail the request if tracking fails
     }
 
     res.json({ document });
