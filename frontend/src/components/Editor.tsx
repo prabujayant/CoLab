@@ -129,10 +129,14 @@ export const CollaborativeEditor = ({ slug, title }: EditorProps) => {
             const content = e.target?.result as string;
             const ytext = ydoc.getText('monaco');
 
-            // Replace entire document content
+            // Append content to the end of the document
             ydoc.transact(() => {
-                ytext.delete(0, ytext.length);
-                ytext.insert(0, content);
+                const length = ytext.length;
+                if (length > 0) {
+                    ytext.insert(length, '\n' + content);
+                } else {
+                    ytext.insert(0, content);
+                }
             });
         };
         reader.readAsText(file);
