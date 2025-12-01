@@ -19,6 +19,8 @@ const api = axios.create({
     withCredentials: true
 });
 
+console.log('API Base URL configured as:', getBaseUrl());
+
 api.interceptors.request.use((config) => {
     const token = useAuthStore.getState().token;
     if (token) {

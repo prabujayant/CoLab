@@ -13,13 +13,16 @@ export const Login = () => {
 
     const handleSubmit = async (event: React.FormEvent) => {
         event.preventDefault();
+        console.log('Attempting login with:', email);
         setLoading(true);
         setError(null);
         try {
             const { data } = await api.post('/auth/login', { email, password });
+            console.log('Login successful:', data);
             setAuth(data.token, data.refreshToken, data.user);
             navigate('/');
         } catch (err: any) {
+            console.error('Login failed:', err);
             setError(err?.response?.data?.error ?? 'Unable to log in');
         } finally {
             setLoading(false);
